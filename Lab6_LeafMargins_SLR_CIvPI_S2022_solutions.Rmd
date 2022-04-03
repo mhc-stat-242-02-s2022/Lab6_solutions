@@ -1,0 +1,74 @@
+---
+title: "Lab 6: Simple Linear Regression, Confidence Intervals versus Prediction Intervals"
+subtitle: "STAT 242: Intermediate Statistics"
+output: pdf_document
+---
+
+## Goals
+
+The goal in this lab is to practice finding confidence intervals for the coefficients, and prediction intervals for new observations. We will compare the widths for prediction versus confidence intervals. We will continue with the leaf margin data from before.
+
+## Loading packages
+
+Here are some packages with functionality you may need for this lab.  Run this code chunk now.
+
+```{r message=FALSE}
+library(readr)
+library(ggplot2)
+library(gridExtra)
+library(mosaic)
+library(dplyr)
+options("pillar.sigfig" = 10) # print 10 significant digits in summarize output
+```
+
+## Leaf Margins
+
+For a variety of reasons, scientists are interested in the relationship between the climate of a region and characteristics of the plants and animals that live there.  For example, this could inform thinking about the impacts of climate change on natural resources, and could be used by paleontologists to learn about historical climatological conditions from the fossil record.
+
+In 1979, the US Geological service published a report discussing a variety of characteristics of forests throughout the world and discussed connections to the climates in those different regions (J. A. Wolfe, 1979, Temperature parameters of humid to mesic forests of eastern Asia and relation to forests of other regions of the Northern Hemisphere and Australasia, USGS Professional Paper, 1106).  One part of this report discussed the connection between the temperature of a region and the shapes of tree leaves in the forests in that region.  Generally, leaves can be described as either "serrated" (having a rough edge like a saw blade) or "entire" (having a smooth edge) - see the picture here: https://en.wikibooks.org/wiki/Historical_Geology/Leaf_shape_and_temperature.  One plot in the report displays the relationship between the mean annual temperature in a forested region (in degrees Celsius) and the percent of leaves in the forest canopy that are "entire".
+
+The following R code reads in the data:
+
+```{r}
+library(tidyverse)
+leaf <- read_csv("http://www.evanlray.com/data/misc/leaf_margins/leaf_margins.csv")
+head(leaf)
+```
+
+**1. Fit a linear model to this data set and print out a summary of the model fit. (We did this in the last lab, so you can copy and paste from there).**
+
+```{r}
+linear_fit <- lm(pct_entire_margined ~ mean_annual_temp_C, data=leaf)
+```
+
+**2. Find a 95% confidence interval for the mean percent of leaves that are entire margined in forests where the mean annual temperature is 17 degrees C. Do this using the predict function.** 
+
+```{r}
+predict_df <- data.frame(
+  mean_annual_temp_C = c(17)
+)
+
+conf_17 <- predict(linear_fit, newdata = predict_df, interval = "confidence")
+conf_17
+```
+
+
+**3. Interpret your interval in the context of the problem; include a statement of what it means to be 95% confident.**
+
+We are 95% confident that the mean percent of leaves that are entire margined in forests where the mean annual temperature is 17 degrees Celsius is between `r round(conf_17[2], 3)` and `r round(conf_17[3], 3)` percent. For 95% of samples like the one in this study, the corresponding confidence intervals will contain the true mean percent of leaves that are entire margined in forests where the mean annual temperature is 17 degrees C.
+
+**4. Find a 95% prediction interval for the percent of leaves that are entire margined in a forest that was not in our data set before, and that has a mean annual temperature of 17 degrees C. Do this using the predict function.**
+
+```{r}
+pred_17 <- predict(linear_fit, newdata = predict_df, interval = "prediction")
+pred_17
+```
+
+
+**5. Interpret your interval in the context of the problem. Be sure to interpret a prediction interval.**
+
+We are 95% confident that the percent of leaves that are entire margined in a forest with a mean annual temperature of 17 degrees C is between `r round(pred_17, 3)` and `r round(pred_17, 3)` percent. For 95% of samples and 95% of forests with a mean annual temperature of 17 degrees Celsius like the one in this study, the corresponding prediction interval will contain the true percentage of leaves that are entire margined.
+
+**6. What is the difference between your intervals in (2) and (4)? Explain briefly.**
+
+(2) is a confidence interval - it only accounts for variation around the mean at x=17. (4) is a prediction interval - it accounts for both the variation around the mean and the variability in entire margined leaves among individual forests with a mean annual temperature of 17 degrees C. 
